@@ -1,0 +1,365 @@
+//获取路线
+BusInfo get_bus_road(const char *busstation){
+    FILE *file = fopen("E:\\Bus management system\\路线", "r");
+    if (!file) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    char line[256];
+    BusInfo info = {"", "", "",""};
+    while (fgets(line, sizeof(line), file)) {
+        char *token;
+        token=strtok(strstr(line, busstation), "->");
+        if (strstr(line, busstation)) {
+            if (strstr(token, busstation)) {
+                strcpy(info.zhan,token);
+            }
+        }
+        break;
+        }
+    fclose(file);
+    return info;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int main()
+{
+    int op;
+    char bus[200][50];
+    printf("现有车次为：\n");
+    read_bus_number();
+    printf("输入查询车次：(1~%d)\n",op);
+    scanf("%d",&op);
+    const char *busnumber = bus[op];
+    BusInfo info= get_bus_road(busnumber);
+    printf("车次编号为: %s\n", bus[op]);
+    printf("完整路线为：%s\n",info.zhan);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BusInfo get_bus_info(const char *busnumber) {
+    FILE *file = fopen("E:\\Bus management system\\时刻表", "r");
+    if (!file) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    char line[256];
+    BusInfo info = {"", "", ""};
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, busnumber)) {
+            char *token = strtok(line, " ");
+            while (token != NULL) {
+                if (strstr(token, "首发车时间:")) {
+                    sscanf(token+16, "%5s", info.start_time);
+                } else if (strstr(token, "末班车时间:")) {
+                    sscanf(token+12, "%5s", info.end_time);
+                } else if (strstr(token, "发车间隔:")) {
+                    sscanf(token+10, "%s", info.interval);
+                }
+                token = strtok(NULL, " ");
+            }
+            break;
+        }
+    }
+    fclose(file);
+    return info;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bus *Time(Bus *L){
+    char bus[5];
+    printf("输入查询车次：\n");
+    scanf("%s",&bus);
+    const char *busnumber = bus;
+    BusInfo info = get_bus_info(busnumber);
+    printf("=========================================================\n");
+    printf("车次编号: %s\n", busnumber);
+    printf("首发车时间: %s\n", info.start_time);
+    printf("末班车时间: %s\n", info.end_time);
+    printf("发车间隔: %s\n", info.interval);
+    printf("=========================================================\n\n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//定义公交车信息结构体
+typedef struct {
+    char busnumber[50];
+    int number_of_stations;
+} BusInfo3;
+//计算给定公交车号在路线文件中经过的站点数量
+BusInfo3 get_station_number(const char *busnumber) {
+    FILE *file = fopen("E:\\Bus management system\\路线", "r");
+    if (file == NULL) {
+        printf("无法打开文件\n");
+        exit(EXIT_FAILURE);
+    }
+    char line[256];
+    char str[500];
+    char *p = str;
+    BusInfo3 info = {"", 0};
+    while (fgets(line, sizeof(line), file)) {
+        char *token,*token2;
+        token = strtok(line, ":");
+        token2= strtok(NULL,":");
+        if (strcmp(token, busnumber) == 0) {
+            sscanf(token2,"%s",str);
+            break;
+        }
+    }
+    while (*p != '\0') {
+        if (*p == '>') {
+            info.number_of_stations++;
+        }
+        p++;
+    }
+    fclose(file);
+    return info;
+}
+int main(){
+    const char *busnumber = "K2(兰家坪->公交修理厂)";
+    BusInfo3 info1 = get_station_number(busnumber);
+    printf("%d\n",info1.number_of_stations+1);
+    return 0;
+}**/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+case 1:
+                while (1){
+                    system("cls");
+                    printf("查看时刻表请选择1\n查看路线图请选择2\n返回选择0\n您的选择是：\n");
+                    scanf("%d",&y);
+                    switch (y) {
+                        case 0:
+                            system("cls");
+                            break;
+                        case 1:
+                            system("cls");
+                            Time(L);
+                            break;
+                        case 2:
+                            system("cls");
+                            Route(L);
+                            break;
+                        default:
+                            printf("请正确输入,温馨提示(0-2)\n");
+                            getchar(); getchar();
+                            printf("\n\n");
+                    }
+                    break;
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <time.h>
+#include "skb.cpp"
+#include "busnum.cpp"
+#include "lxt.cpp"
+#include "searchzhan.cpp"
+int convert_to_sec(char* time_str) {
+    int hours, minutes;
+    sscanf(time_str, "%d:%d", &hours, &minutes);
+    return hours * 3600 + minutes * 60;
+}
+int main() {
+    int i;
+    char stationname[50];
+    // 获取当前时间
+    time_t now = time(NULL);
+    struct tm *local = localtime(&now);
+    // 提取小时、分钟和秒
+    int hours = local->tm_hour;
+    int minutes = local->tm_min;
+    int seconds = local->tm_sec;
+    printf("%d:%d:%d\n",hours,minutes,seconds);
+    // 转换为总秒数
+    int totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    int c;
+    printf("现有车次为：\n");
+    BusInfo1 info=read_bus_number();
+    printf("输入查询车次：(1~%d)\n或输入0返回\n",info.op-1);
+    scanf("%d",&c);
+    while(c<1||c>info.op-1){
+        if(c==0){
+            break;
+        }
+        printf("请重新输入1~%d的数字或者输入0返回:\n",info.op-1);
+        scanf("%d",&c);
+    }
+    if(c==0){
+        return 0;
+    }
+    const char *busnumber = info.bus[c];
+
+
+    printf("输入当前所在站:\n");
+    scanf("%s",stationname);
+    int cfsec,ddsec;
+    int averaget,fcjg;
+    double averagezhan;
+    BusInfo info1 = get_bus_info(busnumber);
+    sscanf(info1.averagetime, "%d", &averaget);
+    BusInfo2 info2 = get_station_number(busnumber);
+    averagezhan=averaget*1.0/info2.number_of_stations;
+    cfsec= convert_to_sec(info1.start_time);
+    sscanf(info1.interval,"%d",&fcjg);
+    ddsec= convert_to_sec(info1.end_time);
+    BusInfo4  info3= get_station(busnumber,stationname);
+    for(i=cfsec;i<=ddsec;i+=fcjg*60){
+        if(totalSeconds>=ddsec+averaget*60||totalSeconds<=cfsec){
+            printf("查询车次还未到发车时间或已超过运营时间\n");
+            break;
+        }else if(totalSeconds<=i+info3.nowstation*averagezhan){
+            printf("还有大约%.1lfmin到站\n",(i+info3.nowstation*averagezhan-totalSeconds)/60);
+            break;
+        }
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+
+void printFileContent(char* fileName) {
+    FILE* file = fopen(fileName, "r");
+    if (file == NULL) {
+        printf("无法打开文件: %s\n", fileName);
+        return;
+    }
+
+    char ch;
+    while ((ch = fgetc(file)) != EOF) {
+        putchar(ch);
+    }
+
+    fclose(file);
+}
+
+int main() {
+    char fileName[100];
+    printf("请输入文件名: ");
+    scanf("%s", fileName);
+    printFileContent(fileName);
+    return 0;
+}
